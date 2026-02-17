@@ -1,0 +1,41 @@
+# =========================
+# OS / System junk
+# =========================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+
+# =========================
+# Env / Secrets (DO NOT COMMIT)
+# =========================
+.env
+.env.*
+*.key
+*.pem
+*.pfx
+*.p12
+*.crt
+credentials.json
+service-account*.json
+
+# =========================
+# Logs / temp / cache
+# =========================
+*.log
+logs/
+tmp/
+temp/
+.cache/
+__pycache__/
