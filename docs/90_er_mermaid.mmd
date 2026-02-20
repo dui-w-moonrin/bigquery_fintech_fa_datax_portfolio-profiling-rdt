@@ -1,0 +1,75 @@
+erDiagram
+
+  %% =========================
+  %% CORE LAYER (source-aligned / normalized-ish)
+  %% =========================
+  CUSTOMER ||--|| LOAN : "customer_id (1:1 in dataset)"
+  STATE_REGION ||--o{ LOAN : "state -> region (1:many)"
+
+  %% Optional DIM (derived but behaves like dimension)
+  DIM_PURPOSE ||--o{ LOAN : "purpose (1:many)"
+
+  %% =========================
+  %% DERIVED / REPORTING LAYER
+  %% =========================
+  LOAN ||--|| LOAN_WITH_REGION : "enrich region via state_region"
+  LOAN ||--o{ LOAN_COUNT_BY_YEAR : "aggregate by issue_year"
+
+  %% =========================
+  %% TABLE DEFINITIONS
+  %% =========================
+  CUSTOMER {
+    string customer_id PK
+    string emp_title
+    string emp_length
+    string home_ownership
+    number annual_inc
+    number annual_inc_joint
+    string verification_status
+    string zip_code
+    string addr_state
+    number avg_cur_bal
+    number tot_cur_bal
+  }
+
+  LOAN {
+    string loan_id PK
+    string customer_id FK
+    string loan_status
+    number loan_amount
+    string state FK
+    number funded_amount
+    string term
+    number int_rate
+    number installment
+    string grade
+    string issue_d
+    date issue_date
+    int issue_year
+    string pymnt_plan
+    string type
+    string purpose FK
+    string description
+    string notes
+  }
+
+  STATE_REGION {
+    string state PK
+    string subregion
+    string region
+  }
+
+  DIM_PURPOSE {
+    string purpose PK
+  }
+
+  LOAN_WITH_REGION {
+    string loan_id PK,FK
+    number loan_amount
+    string region
+  }
+
+  LOAN_COUNT_BY_YEAR {
+    int issue_year PK
+    int loan_count
+  }
