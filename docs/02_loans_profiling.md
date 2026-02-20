@@ -1,4 +1,27 @@
-# Loan Profiling Scorecard (raw.loans)
+# Profiling Report: Loans
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loans`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Column-level profiling scorecard for `raw.loans` plus a few **targeted evidence checks** that are high-signal for Functional Analyst work (definitions, reconciliation mindset, and “prove it with queries”).
+
+## Definitions (v1)
+The scorecard uses **three mutually exclusive buckets** per column:
+- **Missing**: `NULL` (and for text fields, blank/whitespace after trimming)
+- **Mismatched**: value is present but violates an explicit rule (format / enum / range / parse)
+- **Valid**: `total_rows - missing_cnt - mismatched_cnt`
+
+Additional metrics:
+- **Unique**: `COUNT(DISTINCT value)` among non-missing rows
+- **Most common**: top-1 value (count + percent) among non-missing rows
+
+> Profiling = observe + flag. This report does not “fix” data.
+
+---
 
 ## Purpose
 This document summarizes a **data-profiling / data-quality scorecard** for the `raw.loans` dataset.
@@ -143,4 +166,3 @@ G    | 1206|      0.2839|      0.2818|      0.2470|      0.3099|
 - Use the **Column Scorecard** table as the primary “at-a-glance” quality view.
 - Reference **Targeted Checks** as **evidence** for key findings (especially the funded vs loan duplication).
 - Keep this document stable as **v1 profiling**; add stricter rules later only if a business definition requires it.
-

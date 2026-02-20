@@ -1,81 +1,50 @@
-> About Dataset
-> Dataset: cloud-training-demos.fintech
-> 
-> This dataset, hosted on BigQuery, is designed for financial technology (fintech) training and analysis. It comprises six interconnected tables, each providing detailed insights into various aspects of customer loans, loan purposes, and regional distributions. The dataset is ideal for practicing SQL queries, building data models, and conducting financial analytics.
-> 
-> Tables:
-> customer:
-> Contains records of individual customers, including demographic details and unique customer IDs. This table serves as a primary reference for analyzing customer behavior and loan distribution.
+# Dataset Overview
 
-> loan:
-> Includes detailed information about each loan issued, such as the loan amount, interest rate, and tenure. The table is crucial for analyzing lending patterns and financial outcomes.
-> 
-> loan_count_by_year:
-> Provides aggregated loan data by year, offering insights into yearly lending trends. This table helps in understanding the temporal dynamics of loan issuance.
-> 
-> loan_purposes:
-> Lists various reasons or purposes for which loans were issued, along with corresponding loan counts. This data can be used to analyze customer needs and market demands.
-> 
-> loan_with_region:
-> Combines loan data with regional information, allowing for geographical analysis of lending activities. This table is key for regional market analysis and understanding how loan distribution varies across different areas.
-> 
-> state_region:
-> Maps state names to their respective regions, enabling a more granular geographical analysis when combined with other tables in the dataset.
-> 
-> Use Cases:
-> Customer Segmentation: Analyze customer data to identify distinct segments based on demographics and loan behaviors.
-> Loan Analysis: Explore loan issuance patterns, interest rates, and purposes to uncover trends and insights.
-> Regional Analysis: Combine loan and region data to understand how loan distributions vary by geography.
-> Temporal Trends: Utilize the loan_count_by_year table to observe how lending patterns evolve over time.
-> This dataset is ideal for those looking to enhance their skills in SQL, financial data analysis, and BigQuery, providing a comprehensive foundation for fintech-related projects and case studies.
-source: https://www.kaggle.com/datasets/mustafakeser4/bigquery-fintech-dataset
-
-# BigQuery Fintech Dataset (Local Postgres Mirror)
-
-This repo mirrors a public fintech-style dataset into **PostgreSQL** so we can run:
-- Data profiling (scorecards)
-- Data validation checks (RDT-ish)
-- Reconciliation-style sanity checks
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Updated (refactor):** 2026-02-20
 
 ---
+
+## Purpose
+This repo mirrors the public **BigQuery** dataset `cloud-training-demos.fintech` into **PostgreSQL** so we can run:
+- Column-level **profiling scorecards**
+- Simple **validation / reconciliation** checks (FA-friendly)
+- “RDT-ish” documentation patterns (clear definitions + auditable rules)
 
 ## Source
+- **BigQuery public dataset:** `cloud-training-demos.fintech`
+- **Dataset page (Kaggle mirror):** `mustafakeser4/bigquery-fintech-dataset`
 
-- BigQuery public dataset: `cloud-training-demos.fintech`
+> Notes
+> - This is a **training dataset**.  
+> - We do not “fix” raw data in the profiling layer; we **detect, document, and recommend** handling for downstream layers.
 
-> Note: In this repo we treat it as a **training dataset**.
-> All rules/assumptions are documented explicitly in SQL and markdown.
+## Tables in scope
+| Table | Role | Typical grain |
+|---|---|---|
+| `raw.customers` | Customer attributes (mostly categorical + some numeric) | 1 row per customer (in this dataset it behaves like 1 row per `customer_id`) |
+| `raw.loans` | Core loan records | 1 row per `loan_id` |
+| `raw.loan_count_by_year` | Aggregated series | 1 row per `issue_year` |
+| `raw.loan_purposes` | Domain list (enum reference) | 1 row per `purpose` |
+| `raw.loan_with_region` | Enriched loans (region attached) | 1 row per `loan_id` |
+| `raw.state_region` | State → subregion → region mapping | 1 row per `state` |
 
----
+## What “RDT-ish” means here
+We model a lightweight, auditable approach similar in spirit to regulated data work:
+- Consistent **definitions**: `valid / missing / mismatched`
+- Locked **allowed sets** for enums (when appropriate)
+- Locked **patterns** for codes/IDs
+- Numeric parsing + basic sanity rules (`> 0`, reasonable ranges)
+- Outputs that can be exported as a **scorecard CSV**
 
-## Tables (high level)
+## Repo artifacts (high-level)
+- SQL scripts generate scorecards / checks (see `/sql`)
+- Markdown files are the **human-readable reports** (see `/docs`)
 
-Typical entities you will see in this dataset:
-- Customers
-- Loans
-- Payments / Transactions (depending on the subset used)
-
----
-
-## What "RDT-ish" means here
-
-We use simple, auditable rules similar in spirit to regulatory data work:
-- Clear **definitions** (valid/missing/mismatched)
-- Locked **allowed sets** for enums
-- Locked **patterns** for IDs/codes
-- Numeric parsing + basic sanity checks
-- Outputs that can become a **scorecard CSV** later
-
----
-
-## Repo artifacts
-
-- `customer_profiling.sql`  
-  Column-level scorecard for `raw.customers` (text + numeric stats)
-
-- `customer_set_top_20.sql`  
-  Quick top-N distribution helper for categorical columns
-
-- `01_customers_profiling.md`  
-  Human-readable report format for the customer scorecard
-
+Key docs in this pack:
+- `01_customers_profiling.md`
+- `02_loans_profiling.md`
+- `03_loan_count_by_year.md`
+- `04_loan_purposes.md`
+- `05_loan_with_region_profiling.md`
+- `06_state_region.md`

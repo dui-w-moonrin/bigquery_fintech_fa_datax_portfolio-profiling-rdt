@@ -1,4 +1,15 @@
-# State–Subregion–Region Reference Profiling (raw.state_region)
+# Profiling Report: State → Subregion → Region (Mapping)
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.state_region`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Reference-table profiling for a small mapping table used to enrich datasets. Focus: locked domains + cross-field mapping consistency.
+
+---
 
 ## Purpose
 This document summarizes **data profiling / data quality** results for `raw.state_region`, a small reference/lookup table that maps:
@@ -141,4 +152,3 @@ For downstream usage (e.g., RDT mapping or enrichment), recommended filters are:
 - `LOWER(region) <> 'region'`
 
 This preserves raw evidence while ensuring clean mapping behavior in derived outputs.
-

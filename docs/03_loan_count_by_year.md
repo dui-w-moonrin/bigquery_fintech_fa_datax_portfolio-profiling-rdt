@@ -1,4 +1,15 @@
-# Loan Count by Year Profiling Scorecard (raw.loan_count_by_year)
+# Profiling Report: Loan Count by Year
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loan_count_by_year`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Lightweight profiling for an aggregated time-series table (year grain). Focus: structural sanity, completeness, and reconciliation potential.
+
+---
 
 ## Purpose
 This document provides a lightweight **data profiling / data quality** summary for `raw.loan_count_by_year`.

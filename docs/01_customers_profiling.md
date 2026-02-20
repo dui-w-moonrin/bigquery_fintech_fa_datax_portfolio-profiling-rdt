@@ -1,4 +1,27 @@
-# Customers Profiling Scorecard
+# Profiling Report: Customers
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.customers`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Column-level profiling scorecard for customer attributes (text + numeric).  
+Designed to be **FA/RDT-friendly**: every column has explicit definitions for **Valid / Missing / Mismatched**, plus **Uniqueness** and **Most Common** (mode).
+
+## Definitions (global)
+- **total_rows**: number of rows in the table
+- **missing_cnt**: `NULL` or blank after trimming (`BTRIM`)
+- **mismatched_cnt**: value exists but violates a **locked rule** (pattern / allowed-set / numeric-parse)
+- **valid_cnt**: `total_rows - missing_cnt - mismatched_cnt`  
+  ✅ therefore `valid_pct + mismatched_pct + missing_pct = 100%`
+- **unique_cnt**: `COUNT(DISTINCT value)` among **non-missing** values
+- **most_common_value**: top-1 value among non-missing values
+
+> Note: For enum-like columns, `unique_pct` is naturally small. We keep it for consistency across columns.
+
+---
 
 > Repo: **bigquery_fintech**  
 > Table: `raw.customers`  

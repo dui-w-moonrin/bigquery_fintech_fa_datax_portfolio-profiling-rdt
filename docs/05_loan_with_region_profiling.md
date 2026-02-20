@@ -1,4 +1,15 @@
-# Loan With Region Profiling (raw.loan_with_region)
+# Profiling Report: Loans Enriched with Region
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loan_with_region`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Profiling for a derived/enriched table at loan grain (1 row per `loan_id`). Focus: enum validity + reconciliation to `raw.loans`.
+
+---
 
 ## Purpose
 This document provides a lightweight **data profiling / data quality** summary for `raw.loan_with_region`.

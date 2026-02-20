@@ -1,4 +1,15 @@
-# Loan Purposes Reference Profiling (raw.loan_purposes)
+# Profiling Report: Loan Purposes (Domain List)
+
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loan_purposes`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Purpose
+Reference-table profiling for allowed `purpose` values. Focus: completeness + uniqueness (domain stability).
+
+---
 
 ## Purpose
 This document provides a lightweight **reference-table profiling** summary for `raw.loan_purposes`.
@@ -64,4 +75,3 @@ wedding           |
   - **Enum validation** in profiling scorecards
   - **Mapping** to reporting categories (if needed)
   - **UAT / test case** design (allowed-values list)
-
