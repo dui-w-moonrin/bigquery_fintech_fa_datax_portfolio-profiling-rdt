@@ -1,5 +1,32 @@
-# Loan Profiling Scorecard
+# Loan Profiling Scorecard (raw.loans)
 
+## Purpose
+This document summarizes a **data-profiling / data-quality scorecard** for the `raw.loans` dataset.
+It is designed to be **Functional Analyst–friendly**: clear definitions, repeatable checks, and concise findings.
+
+## Metric Definitions (v1)
+The scorecard uses **three mutually exclusive buckets** per column:
+
+- **Missing**: `NULL` (and for text fields, blank/whitespace after trimming).
+- **Mismatched**: values that are present but violate an explicit rule (examples: out-of-range numeric, invalid enum value, invalid format).
+- **Valid**: `total_rows - missing_cnt - mismatched_cnt`.
+
+Additional metrics:
+- **Unique**: `COUNT(DISTINCT value)` among **non-missing** rows.
+- **Most common**: the top-1 value among **non-missing** rows, with count and percent.
+
+> Note: This is a **profiling** report (observe + flag). It does not “fix” data.
+
+## Key Findings (high signal)
+- **Funding duplication:** `funded_amount` equals `loan_amount` for **100%** of rows (see the equality check below).  
+  This dataset therefore **does not represent partial funding scenarios** (either a business assumption or a mapping duplication).
+- **Interest rate encoding:** `int_rate` behaves like a **fraction** (e.g., 0.13 ≈ 13%), not a percentage.
+- **Business consistency:** `grade` shows a clean **risk ladder** (A lowest rates → G highest), suggesting grade labeling aligns with pricing.
+- **Term & installment sanity:** 60-month loans have higher average loan amount and higher average installment than 36-month loans, which is consistent.
+
+---
+
+## 1) Column Scorecard (IDs + Enums)
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
 -----------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
 loan_id    |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    270299|    100.00|              1|           0.00|1                |
@@ -9,12 +36,18 @@ state      |    270299|   270299|   100.00|             0|          0.00|       
 term       |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|         2|      0.00|         189772|          70.21|36 months        |
 grade      |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|         7|      0.00|          79072|          29.25|B                |
 
+
+## 2) Numeric Summary (Amounts, Rate, Installment)
+
 column_name  |total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|mean    |std    |min    |p25    |p50     |p75     |max     |
 -------------+----------+---------+---------+--------------+--------------+-----------+-----------+--------+-------+-------+-------+--------+--------+--------+
 loan_amount  |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|15412.83|9459.78|1000.00|8000.00|13200.00|20300.00|40000.00|
 funded_amount|    270299|   270299|   100.00|             0|          0.00|          0|       0.00|15412.83|9459.78|1000.00|8000.00|13200.00|20300.00|40000.00|
 int_rate     |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    0.13|   0.05|   0.05|   0.09|    0.13|    0.16|    0.31|
 installment  |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|  453.92| 272.34|  29.52| 256.04|  383.96|  605.12| 1719.83|
+
+
+## 3) Distribution Snapshots (Top values)
 
 loan_status_norm  |cnt   |pct  |
 ------------------+------+-----+
@@ -68,18 +101,31 @@ min_loan_cnt|p50_loan_cnt|p90_loan_cnt|max_loan_cnt|
 ------------+------------+------------+------------+
            1|         1.0|         1.0|           1|
 
+
+## 4) Targeted Checks (Evidence)
+### 4.1 funded_amount equals loan_amount
+
 total_rows|eq_cnt|eq_pct|diff_cnt|
 ----------+------+------+--------+
     270299|270299|100.00|       0|
+
+
+### 4.2 Distinct counts (loan_amount vs funded_amount)
 
 total_rows|loan_amount_distinct|funded_amount_distinct|
 ----------+--------------------+----------------------+
     270299|                1543|                  1543|
 
+
+### 4.3 Term vs installment sanity (aggregate)
+
 term      |cnt   |avg_installment|p50_installment|avg_loan_amount|
 ----------+------+---------------+---------------+---------------+
  36 months|189772|         430.09|         340.18|       12988.51|
  60 months| 80527|         510.08|         474.31|       21126.03|
+
+
+### 4.4 Interest rate ladder by grade
 
 grade|cnt  |avg_int_rate|p50_int_rate|min_int_rate|max_int_rate|
 -----+-----+------------+------------+------------+------------+
@@ -90,3 +136,11 @@ D    |38876|      0.1881|      0.1825|      0.0600|      0.2880|
 E    |13429|      0.2203|      0.2170|      0.0600|      0.2900|
 F    | 4005|      0.2577|      0.2499|      0.0600|      0.3075|
 G    | 1206|      0.2839|      0.2818|      0.2470|      0.3099|
+
+---
+
+## How to use this in the portfolio
+- Use the **Column Scorecard** table as the primary “at-a-glance” quality view.
+- Reference **Targeted Checks** as **evidence** for key findings (especially the funded vs loan duplication).
+- Keep this document stable as **v1 profiling**; add stricter rules later only if a business definition requires it.
+
