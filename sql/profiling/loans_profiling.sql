@@ -1,3 +1,13 @@
+/* =====================================================================
+   File    : loans_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.loans
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
 WITH
 /* =========================
    1) loan_id (PK-style)
@@ -10,6 +20,7 @@ score_loan_id AS (
     SELECT loan_id
     FROM raw.loans
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -19,6 +30,7 @@ score_loan_id AS (
       COUNT(*) FILTER (WHERE loan_id IS NOT NULL) AS non_missing_cnt
     FROM base
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT loan_id::text AS most_common_value, COUNT(*) AS most_common_cnt
     FROM base
@@ -27,6 +39,7 @@ score_loan_id AS (
     ORDER BY COUNT(*) DESC, loan_id
     LIMIT 1
   ),
+-- [CTE] final: final output assembly
   final AS (
     SELECT
       'loan_id' AS column_name,
@@ -352,7 +365,7 @@ ORDER BY t.sort_order;
 
 WITH
 /* =========================
-   helper pattern (ซ้ำ 4 ตัว)
+   helper pattern 
    LOCK:
      amount/installment: mismatched < 0
      int_rate: mismatched < 0 OR > 100
@@ -515,7 +528,7 @@ score_installment AS (
 )
 
 /* =========================
-   FINAL UNION + ROUND (ทีเดียว)
+   FINAL UNION + ROUND 
 ========================= */
 SELECT
   t.column_name,
@@ -544,4 +557,3 @@ FROM (
   SELECT 4 AS sort_order, * FROM score_installment
 ) t
 ORDER BY t.sort_order;
-

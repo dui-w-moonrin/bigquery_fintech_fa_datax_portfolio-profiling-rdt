@@ -1,7 +1,19 @@
+/* =====================================================================
+   File    : customers_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.customers
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
 -- Customer Profiling Scorecard (raw.customers)
 -- Definitions: missing = NULL/blank (trimmed), mismatched = violates locked rule, valid = total - missing - mismatched
 
-WITH base AS (
+WITH
+-- [CTE] base: normalize raw columns (trim/NULLify/cast)
+base AS (
   SELECT
     NULLIF(BTRIM(customer_id::text), '') AS customer_id_norm,
     NULLIF(BTRIM(emp_title::text), '')   AS emp_title_norm
@@ -22,6 +34,7 @@ score_customer_id AS (
       COUNT(*) FILTER (WHERE customer_id_norm IS NOT NULL) AS non_missing_cnt
     FROM base
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT customer_id_norm AS most_common_value, COUNT(*) AS most_common_cnt
     FROM base
@@ -70,6 +83,7 @@ score_emp_title AS (
       COUNT(*) FILTER (WHERE emp_title_norm IS NOT NULL) AS non_missing_cnt
     FROM base
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT emp_title_norm AS most_common_value, COUNT(*) AS most_common_cnt
     FROM base
@@ -108,6 +122,7 @@ score_emp_length AS (
       NULLIF(LOWER(BTRIM(emp_length::text)), '') AS v
     FROM raw.customers
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -140,6 +155,7 @@ score_emp_length AS (
       ) AS non_missing_cnt
     FROM norm
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT v AS most_common_value, COUNT(*) AS most_common_cnt
     FROM norm
@@ -179,6 +195,7 @@ score_home_ownership AS (
       NULLIF(UPPER(BTRIM(home_ownership::text)), '') AS v
     FROM raw.customers
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -197,6 +214,7 @@ score_home_ownership AS (
       COUNT(*) FILTER (WHERE v IS NOT NULL) AS non_missing_cnt
     FROM norm
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT v AS most_common_value, COUNT(*) AS most_common_cnt
     FROM norm
@@ -234,6 +252,7 @@ score_verification_status AS (
       NULLIF(LOWER(BTRIM(verification_status::text)), '') AS v
     FROM raw.customers
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -251,6 +270,7 @@ score_verification_status AS (
       COUNT(*) FILTER (WHERE v IS NOT NULL) AS non_missing_cnt
     FROM norm
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT v AS most_common_value, COUNT(*) AS most_common_cnt
     FROM norm
@@ -288,6 +308,7 @@ score_zip_code AS (
       NULLIF(BTRIM(zip_code::text), '') AS v
     FROM raw.customers
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -305,6 +326,7 @@ score_zip_code AS (
       COUNT(*) FILTER (WHERE v IS NOT NULL) AS non_missing_cnt
     FROM norm
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT v AS most_common_value, COUNT(*) AS most_common_cnt
     FROM norm
@@ -342,6 +364,7 @@ score_addr_state AS (
       NULLIF(UPPER(BTRIM(addr_state::text)), '') AS v
     FROM raw.customers
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -359,6 +382,7 @@ score_addr_state AS (
       COUNT(*) FILTER (WHERE v IS NOT NULL) AS non_missing_cnt
     FROM norm
   ),
+-- [CTE] mc: CTE
   mc AS (
     SELECT v AS most_common_value, COUNT(*) AS most_common_cnt
     FROM norm

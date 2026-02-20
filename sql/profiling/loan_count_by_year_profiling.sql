@@ -1,4 +1,16 @@
-WITH norm AS (
+/* =====================================================================
+   File    : loan_count_by_year_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.loan_count_by_year
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
+WITH
+-- [CTE] norm: normalize raw columns (trim/NULLify/cast)
+norm AS (
   SELECT
     issue_year::numeric AS issue_year_raw,
     CASE
@@ -8,6 +20,7 @@ WITH norm AS (
     loan_count::bigint AS loan_count
   FROM raw.loan_count_by_year
 ),
+-- [CTE] score_issue_year: scorecard metrics for one column
 score_issue_year AS (
   SELECT
     'issue_year' AS column_name,
@@ -27,6 +40,7 @@ score_issue_year AS (
     COUNT(*) FILTER (WHERE issue_year_raw IS NULL) AS missing_cnt
   FROM norm
 ),
+-- [CTE] score_loan_count: scorecard metrics for one column
 score_loan_count AS (
   SELECT
     'loan_count' AS column_name,
@@ -68,10 +82,12 @@ WITH norm AS (
   FROM raw.loan_count_by_year
   WHERE issue_year IS NOT NULL
 ),
+-- [CTE] bounds: CTE
 bounds AS (
   SELECT MIN(issue_year) AS min_year, MAX(issue_year) AS max_year
   FROM norm
 ),
+-- [CTE] years: CTE
 years AS (
   SELECT generate_series(min_year, max_year)::int AS issue_year
   FROM bounds

@@ -1,3 +1,13 @@
+/* =====================================================================
+   File    : loan_with_region_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.loan_with_region
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
 WITH
 -- 1) score: loan_id (int4) -> text-style scorecard
 score_loan_id AS (
@@ -5,6 +15,7 @@ score_loan_id AS (
     SELECT loan_id
     FROM raw.loan_with_region
   ),
+-- [CTE] agg: aggregate counts for scorecard metrics
   agg AS (
     SELECT
       COUNT(*) AS total_rows,
@@ -14,6 +25,7 @@ score_loan_id AS (
       COUNT(*) FILTER (WHERE loan_id IS NOT NULL) AS non_missing_cnt
     FROM base
   ),
+-- [CTE] most_common: CTE
   most_common AS (
     SELECT
       loan_id::text AS most_common_value,

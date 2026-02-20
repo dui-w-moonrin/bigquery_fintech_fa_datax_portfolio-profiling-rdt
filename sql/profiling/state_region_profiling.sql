@@ -1,4 +1,16 @@
-WITH base AS (
+/* =====================================================================
+   File    : state_region_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.state_region
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
+WITH
+-- [CTE] base: normalize raw columns (trim/NULLify/cast)
+base AS (
   SELECT
     NULLIF(BTRIM(state), '')     AS state_trim,
     NULLIF(BTRIM(subregion), '') AS subregion_trim,
@@ -30,6 +42,7 @@ score_state AS (
       COUNT(*) FILTER (WHERE state_trim IS NOT NULL) AS non_missing_cnt
     FROM base
   ),
+-- [CTE] most_common: CTE
   most_common AS (
     SELECT
       state_norm AS most_common_value,

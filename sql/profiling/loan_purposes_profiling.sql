@@ -1,10 +1,23 @@
-WITH norm AS (
+/* =====================================================================
+   File    : loan_purposes_profiling.sql
+   Purpose : Data profiling / scorecard query for raw.loan_purposes
+   Output  : One row per checked column (or distribution helper), with
+             counts for total / missing / mismatched / valid / unique / mode.
+   Notes   : missing = NULL or blank after trimming
+             mismatched = violates the locked rule described per section
+   Updated : 2026-02-20 (sql refactoring: consistent comments & layout)
+===================================================================== */
+
+WITH
+-- [CTE] norm: normalize raw columns (trim/NULLify/cast)
+norm AS (
   SELECT
     purpose,
     NULLIF(BTRIM(purpose), '') AS purpose_trim,
     LOWER(NULLIF(BTRIM(purpose), '')) AS purpose_norm
   FROM raw.loan_purposes
 ),
+-- [CTE] agg: aggregate counts for scorecard metrics
 agg AS (
   SELECT
     COUNT(*) AS total_rows,
