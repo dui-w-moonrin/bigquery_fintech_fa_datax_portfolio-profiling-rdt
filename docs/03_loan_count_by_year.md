@@ -1,32 +1,28 @@
 # Profiling Report: Loan Count by Year
 
-**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
-**Table:** `raw.loan_count_by_year`  
-**Updated (refactor):** 2026-02-20
-
----
-
 ## Purpose
 Lightweight profiling for an aggregated time-series table (year grain). Focus: structural sanity, completeness, and reconciliation potential.
 
 ---
 
-## Purpose
 This document provides a lightweight **data profiling / data quality** summary for `raw.loan_count_by_year`.
 Unlike `raw.loans` (row-level transactional data), this table is an **aggregated time-series** at **year grain**
 (i.e., **one row per `issue_year`**). The goal is to validate that the series is structurally sound and safe to use
 for trend analysis (e.g., YoY comparisons).
 
-## Table Grain and Assumptions
-- **Grain:** 1 row per `issue_year`
-- **Measure:** `loan_count` = number of loans issued in that year
-- **Expected properties:**
-  - `issue_year` should be a whole-number year (integer after normalization)
-  - `loan_count` should be a positive integer
-  - No duplicate `issue_year` values (unique key)
-  - No missing years **within the observed min–max range** (optional check)
+## 1) Scope & Definitions (applies to every column)
+**Scorecard fields**
+- **Missing**: NULL / blank after trimming (and normalization rules stated per column if any)
+- **Mismatched**: violates a locked rule / expected domain for that column
+- **Valid**: total − missing − mismatched
+- **Unique**: distinct count of normalized values
+- **Most common**: mode value and its share (applies mainly to text/categorical columns)
 
-## Metric Definitions (v1)
+**Column type conventions**
+- **Text / categorical** columns usually report: missing/mismatched/valid/unique/most_common_value (+ share)
+- **Numeric** columns usually report: missing/mismatched/valid/unique plus **mean | std | min | p25 | p50 | p75 | max**
+
+### 1.3 Dataset-specific notes
 For each column, we use three mutually exclusive buckets:
 
 - **Missing:** `NULL`
@@ -39,14 +35,18 @@ For each column, we use three mutually exclusive buckets:
 
 ---
 
-## 1) Column Scorecard
+## 2) Locked rules per column (what we consider "mismatched")
+_(todo: list per-column locked rules, if any; otherwise state 'No additional locked rules beyond type normalization')_
 
-```text
+## 3) Latest scorecard outputs
+### 3.1 Text / categorical columns
+
+
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|
 -----------+----------+---------+---------+--------------+--------------+-----------+-----------+
 issue_year |         8|        8|   100.00|             0|          0.00|          0|       0.00|
 loan_count |         8|        8|   100.00|             0|          0.00|          0|       0.00|
-```
+
 
 **Interpretation**
 - Both columns are **100% valid** under the v1 rules.
@@ -54,13 +54,12 @@ loan_count |         8|        8|   100.00|             0|          0.00|       
 
 ---
 
-## 2) Dataset Summary
+### 3.2 Numeric columns
 
-```text
 year_rows|min_year|max_year|total_loans|min_loan_count|max_loan_count|
 ---------+--------+--------+-----------+--------------+--------------+
         8|    2012|    2019|     270299|          2594|         51737|
-```
+
 
 **Interpretation**
 - The series covers **2012–2019** (8 years).
@@ -70,8 +69,36 @@ year_rows|min_year|max_year|total_loans|min_loan_count|max_loan_count|
 
 ---
 
-## 3) Raw Values (as imported)
+## 4) Distribution snapshots (Top-N evidence)
+_none_
 
+## 5) Notes / Key findings (high signal)
+_none_
+
+## 6) Next checks / TODO
+- Add cross-table integrity checks (FK orphans / joinability) where applicable
+- Add reconciliation controls (control totals) for derived/reporting tables
+- Promote reusable rules into SQL validation pack
+
+---
+
+## Appendix: Raw notes kept from the original file
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loan_count_by_year`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Table Grain and Assumptions
+- **Grain:** 1 row per `issue_year`
+- **Measure:** `loan_count` = number of loans issued in that year
+- **Expected properties:**
+  - `issue_year` should be a whole-number year (integer after normalization)
+  - `loan_count` should be a positive integer
+  - No duplicate `issue_year` values (unique key)
+  - No missing years **within the observed min–max range** (optional check)
+
+## Raw Values (as imported)
 ```text
 issue_year|loan_count|
 ----------+----------+

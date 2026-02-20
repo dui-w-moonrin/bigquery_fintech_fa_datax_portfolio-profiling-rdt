@@ -1,17 +1,10 @@
 # Profiling Report: State → Subregion → Region (Mapping)
 
-**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
-**Table:** `raw.state_region`  
-**Updated (refactor):** 2026-02-20
-
----
-
 ## Purpose
 Reference-table profiling for a small mapping table used to enrich datasets. Focus: locked domains + cross-field mapping consistency.
 
 ---
 
-## Purpose
 This document summarizes **data profiling / data quality** results for `raw.state_region`, a small reference/lookup table that maps:
 
 - `state` → `subregion` → `region`
@@ -20,19 +13,19 @@ This mapping can be used to enrich other tables (e.g., converting a state code i
 
 ---
 
-## Table Grain and Expectations (v1)
-- **Grain:** 1 row per US `state` code (2-letter)
-- **Expected domains:**
-  - `state`: exactly 2 uppercase letters (e.g., `CA`, `NY`)
-  - `subregion`: one of the 9 US Census divisions
-  - `region`: one of 4 values (`Northeast`, `Midwest`, `South`, `West`)
-- **Expected uniqueness:** `state` should be unique (reference key)
+## 1) Scope & Definitions (applies to every column)
+**Scorecard fields**
+- **Missing**: NULL / blank after trimming (and normalization rules stated per column if any)
+- **Mismatched**: violates a locked rule / expected domain for that column
+- **Valid**: total − missing − mismatched
+- **Unique**: distinct count of normalized values
+- **Most common**: mode value and its share (applies mainly to text/categorical columns)
 
-> Note: Because this repo focuses on **Profiling + RDT**, we do not “fix” the raw table in this step. We only detect, document, and recommend handling for downstream layers.
+**Column type conventions**
+- **Text / categorical** columns usually report: missing/mismatched/valid/unique/most_common_value (+ share)
+- **Numeric** columns usually report: missing/mismatched/valid/unique plus **mean | std | min | p25 | p50 | p75 | max**
 
----
-
-## Metric Definitions (v1)
+### 1.3 Dataset-specific notes
 For each column:
 - **Missing:** `NULL` / blank after trimming
 - **Mismatched:** present but violates a locked rule
@@ -47,15 +40,19 @@ Additional metrics:
 
 ---
 
-## 1) Column Profiling Scorecard
+## 2) Locked rules per column (what we consider "mismatched")
+_otherwise state 'No additional locked rules beyond type normalization'_
 
-```text
+## 3) Latest scorecard outputs
+### 3.1 Text / categorical columns
+
+
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
 -----------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
 state      |        52|       51|    98.08|             1|          1.92|          0|       0.00|        52|    100.00|              1|           1.92|AK               |
 subregion  |        52|       51|    98.08|             1|          1.92|          0|       0.00|        10|     19.23|              9|          17.31|South Atlantic   |
 region     |        52|       51|    98.08|             1|          1.92|          0|       0.00|         5|      9.62|             17|          32.69|South            |
-```
+
 
 ### Interpretation
 - The table contains **52 rows** in total, while **51 rows** are valid for each of the three columns.
@@ -73,7 +70,83 @@ region     |        52|       51|    98.08|             1|          1.92|       
 
 ---
 
-## 2) Cross-field Validation (subregion → region)
+## Finding Summary
+- **Finding:** A single anomalous row exists that behaves like a duplicated header line embedded as data.
+- **Impact:** If used in joins/enrichment, this row could create incorrect mappings for one record (or cause unexpected categories in reports).
+- **Severity:** Low (1 row), but worth documenting because reference tables should be clean and stable.
+
+---
+
+## 4) Distribution snapshots (Top-N evidence)
+
+state_region_norm|cnt|pct |
+-----------------+---+----+
+AK               |  1|1.92|
+AL               |  1|1.92|
+AR               |  1|1.92|
+AZ               |  1|1.92|
+CA               |  1|1.92|
+...
+
+**Interpretation:** Supports the expected grain (1 row per state), except for one extra anomaly row.
+
+### Subregions
+
+South Atlantic    |  9|17.31|
+Mountain          |  8|15.38|
+West North Central|  7|13.46|
+New England       |  6|11.54|
+East North Central|  5| 9.62|
+Pacific           |  5| 9.62|
+East South Central|  4| 7.69|
+West South Central|  4| 7.69|
+Middle Atlantic   |  3| 5.77|
+subregion         |  1| 1.92|
+
+**Interpretation:** The unexpected value `subregion` appears once, reinforcing the “embedded header row” hypothesis.
+
+### Regions
+
+South      | 17|32.69|
+West       | 13|25.00|
+Midwest    | 12|23.08|
+Northeast  |  9|17.31|
+region     |  1| 1.92|
+
+**Interpretation:** The unexpected value `region` appears once, consistent with the same anomalous row.
+
+---
+
+## 5) Notes / Key findings (high signal)
+_(todo: list 3–6 high-signal observations + where to look next)_
+
+## 6) Next checks / TODO
+- Add cross-table integrity checks (FK orphans / joinability) where applicable
+- Add reconciliation controls (control totals) for derived/reporting tables
+- Promote reusable rules into SQL validation pack
+
+---
+
+## Appendix: Raw notes kept from the original file
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.state_region`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Table Grain and Expectations (v1)
+- **Grain:** 1 row per US `state` code (2-letter)
+- **Expected domains:**
+  - `state`: exactly 2 uppercase letters (e.g., `CA`, `NY`)
+  - `subregion`: one of the 9 US Census divisions
+  - `region`: one of 4 values (`Northeast`, `Midwest`, `South`, `West`)
+- **Expected uniqueness:** `state` should be unique (reference key)
+
+> Note: Because this repo focuses on **Profiling + RDT**, we do not “fix” the raw table in this step. We only detect, document, and recommend handling for downstream layers.
+
+---
+
+## Cross-field Validation (subregion → region)
 We validated that each `subregion` maps to the correct `region`:
 
 - `New England`, `Middle Atlantic` → `Northeast`
@@ -91,55 +164,6 @@ subregion     |Region     |  1|
 ### Interpretation
 - Exactly **one** `(subregion, region)` pair violates the mapping rules.
 - The pair looks like **embedded header text** (e.g., `subregion`, `Region`), which indicates a data-quality artifact rather than a genuine mapping record.
-
----
-
-## 3) Domain Distributions (Evidence)
-
-### States (Top-N snapshot)
-```text
-state_region_norm|cnt|pct |
------------------+---+----+
-AK               |  1|1.92|
-AL               |  1|1.92|
-AR               |  1|1.92|
-AZ               |  1|1.92|
-CA               |  1|1.92|
-...
-```
-**Interpretation:** Supports the expected grain (1 row per state), except for one extra anomaly row.
-
-### Subregions
-```text
-South Atlantic    |  9|17.31|
-Mountain          |  8|15.38|
-West North Central|  7|13.46|
-New England       |  6|11.54|
-East North Central|  5| 9.62|
-Pacific           |  5| 9.62|
-East South Central|  4| 7.69|
-West South Central|  4| 7.69|
-Middle Atlantic   |  3| 5.77|
-subregion         |  1| 1.92|
-```
-**Interpretation:** The unexpected value `subregion` appears once, reinforcing the “embedded header row” hypothesis.
-
-### Regions
-```text
-South      | 17|32.69|
-West       | 13|25.00|
-Midwest    | 12|23.08|
-Northeast  |  9|17.31|
-region     |  1| 1.92|
-```
-**Interpretation:** The unexpected value `region` appears once, consistent with the same anomalous row.
-
----
-
-## Finding Summary
-- **Finding:** A single anomalous row exists that behaves like a duplicated header line embedded as data.
-- **Impact:** If used in joins/enrichment, this row could create incorrect mappings for one record (or cause unexpected categories in reports).
-- **Severity:** Low (1 row), but worth documenting because reference tables should be clean and stable.
 
 ---
 

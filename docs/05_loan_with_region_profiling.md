@@ -1,34 +1,26 @@
 # Profiling Report: Loans Enriched with Region
 
-**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
-**Table:** `raw.loan_with_region`  
-**Updated (refactor):** 2026-02-20
-
----
-
 ## Purpose
 Profiling for a derived/enriched table at loan grain (1 row per `loan_id`). Focus: enum validity + reconciliation to `raw.loans`.
 
 ---
 
-## Purpose
 This document provides a lightweight **data profiling / data quality** summary for `raw.loan_with_region`.
 The table appears to be a derived “enriched” dataset that attaches a **region** attribute to each loan record.
 
-## Table Grain and Assumptions
-- **Grain:** 1 row per `loan_id`
-- **Key column:** `loan_id`
-- **Measures/attributes:**
-  - `loan_amount` (numeric)
-  - `region` (categorical enum)
+## 1) Scope & Definitions (applies to every column)
+**Scorecard fields**
+- **Missing**: NULL / blank after trimming (and normalization rules stated per column if any)
+- **Mismatched**: violates a locked rule / expected domain for that column
+- **Valid**: total − missing − mismatched
+- **Unique**: distinct count of normalized values
+- **Most common**: mode value and its share (applies mainly to text/categorical columns)
 
-**Expected properties (v1):**
-- `loan_id` should be present, positive, and **unique** (no duplicates)
-- `loan_amount` should be present and **positive**
-- `region` should be present and belong to an allowed set (e.g., `South`, `West`, `Northeast`, `Midwest`)
-- The table should **reconcile** to `raw.loans` at `loan_id` level (same row count + distinct IDs)
+**Column type conventions**
+- **Text / categorical** columns usually report: missing/mismatched/valid/unique/most_common_value (+ share)
+- **Numeric** columns usually report: missing/mismatched/valid/unique plus **mean | std | min | p25 | p50 | p75 | max**
 
-## Metric Definitions (v1)
+### 1.3 Dataset-specific notes
 For each column, we use three mutually exclusive buckets:
 
 - **Missing:** `NULL` (or blank after trimming for text)
@@ -44,14 +36,17 @@ In addition:
 
 ---
 
-## 1) Text/ID Scorecard (loan_id, region)
+## 2) Locked rules per column (what we consider "mismatched")
+_(todo: list per-column locked rules, if any; otherwise state 'No additional locked rules beyond type normalization')_
 
-```text
+## 3) Latest scorecard outputs
+### 3.1 Text / categorical columns
+
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
 -----------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
 loan_id    |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    270299|    100.00|              1|           0.00|1                |
 region     |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|         4|      0.00|          97683|          36.14|South            |
-```
+
 
 **Interpretation**
 - `loan_id` is **100% valid** and **fully unique** (no duplicates / no missing).
@@ -63,13 +58,12 @@ reflects the size of the domain (here, 4 regions).
 
 ---
 
-## 2) Numeric Scorecard (loan_amount)
+## 3.2) Numeric columns
 
-```text
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|mean    |std    |min    |p25    |p50     |p75     |max     |
 -----------+----------+---------+---------+--------------+--------------+-----------+-----------+--------+-------+-------+-------+--------+--------+--------+
 loan_amount|    270299|   270299|   100.00|             0|          0.00|          0|       0.00|15412.83|9459.78|1000.00|8000.00|13200.00|20300.00|40000.00|
-```
+
 
 **Interpretation**
 - `loan_amount` has **no missing values** and **no non-positive values** under v1 rules.
@@ -78,8 +72,53 @@ loan_amount|    270299|   270299|   100.00|             0|          0.00|       
 
 ---
 
-## 3) Reconciliation to raw.loans (loan_id level)
+## 4) Distribution snapshots (Top-N evidence)
 
+region_norm|cnt  |pct  |
+-----------+-----+-----+
+South      |97683|36.14|
+West       |69137|25.58|
+Northeast  |55014|20.35|
+Midwest    |48465|17.93|
+
+
+**Interpretation**
+- Regional volumes are reasonably spread across the 4 regions, with **South** as the largest share.
+- This distribution can be reused as a baseline for future regressions (e.g., if the pipeline changes, large shifts may indicate mapping issues).
+
+---
+
+## 5) Notes / Key findings (high signal)
+_(todo: list 3–6 high-signal observations + where to look next)_
+
+## 6) Next checks / TODO
+- Add cross-table integrity checks (FK orphans / joinability) where applicable
+- Add reconciliation controls (control totals) for derived/reporting tables
+- Promote reusable rules into SQL validation pack
+
+---
+
+## Appendix: Raw notes kept from the original file
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.loan_with_region`  
+**Updated (refactor):** 2026-02-20
+
+---
+
+## Table Grain and Assumptions
+- **Grain:** 1 row per `loan_id`
+- **Key column:** `loan_id`
+- **Measures/attributes:**
+  - `loan_amount` (numeric)
+  - `region` (categorical enum)
+
+**Expected properties (v1):**
+- `loan_id` should be present, positive, and **unique** (no duplicates)
+- `loan_amount` should be present and **positive**
+- `region` should be present and belong to an allowed set (e.g., `South`, `West`, `Northeast`, `Midwest`)
+- The table should **reconcile** to `raw.loans` at `loan_id` level (same row count + distinct IDs)
+
+## Reconciliation to raw.loans (loan_id level)
 ```text
 loan_with_region_rows|loan_with_region_distinct_loan_id|loans_rows|loans_distinct_loan_id|
 ---------------------+---------------------------------+----------+----------------------+
@@ -89,23 +128,6 @@ loan_with_region_rows|loan_with_region_distinct_loan_id|loans_rows|loans_distinc
 **Interpretation**
 - `raw.loan_with_region` matches `raw.loans` exactly by **row count** and **distinct `loan_id`**.
 - This strongly suggests the dataset is a **one-to-one enrichment** of the loans table (no missing mappings and no extras).
-
----
-
-## 4) Region Distribution
-
-```text
-region_norm|cnt  |pct  |
------------+-----+-----+
-South      |97683|36.14|
-West       |69137|25.58|
-Northeast  |55014|20.35|
-Midwest    |48465|17.93|
-```
-
-**Interpretation**
-- Regional volumes are reasonably spread across the 4 regions, with **South** as the largest share.
-- This distribution can be reused as a baseline for future regressions (e.g., if the pipeline changes, large shifts may indicate mapping issues).
 
 ---
 

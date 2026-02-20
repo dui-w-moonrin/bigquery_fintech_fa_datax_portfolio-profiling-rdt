@@ -1,16 +1,22 @@
 # Profiling Report: Customers
 
-**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
-**Table:** `raw.customers`  
-**Updated (refactor):** 2026-02-20
-
----
-
 ## Purpose
 Column-level profiling scorecard for customer attributes (text + numeric).  
 Designed to be **FA/RDT-friendly**: every column has explicit definitions for **Valid / Missing / Mismatched**, plus **Uniqueness** and **Most Common** (mode).
 
-## Definitions (global)
+## 1) Scope & Definitions (applies to every column)
+**Scorecard fields**
+- **Missing**: NULL / blank after trimming (and normalization rules stated per column if any)
+- **Mismatched**: violates a locked rule / expected domain for that column
+- **Valid**: total − missing − mismatched
+- **Unique**: distinct count of normalized values
+- **Most common**: mode value and its share (applies mainly to text/categorical columns)
+
+**Column type conventions**
+- **Text / categorical** columns usually report: missing/mismatched/valid/unique/most_common_value (+ share)
+- **Numeric** columns usually report: missing/mismatched/valid/unique plus **mean | std | min | p25 | p50 | p75 | max**
+
+### 1.3 Dataset-specific notes
 - **total_rows**: number of rows in the table
 - **missing_cnt**: `NULL` or blank after trimming (`BTRIM`)
 - **mismatched_cnt**: value exists but violates a **locked rule** (pattern / allowed-set / numeric-parse)
@@ -31,8 +37,6 @@ This page is a **column-level profiling scorecard** for customer attributes (tex
 It is designed to be **FA/RDT-friendly**: each column has clear definitions for **Valid / Mismatched / Missing**, plus **Uniqueness** and **Most Common** (mode).
 
 ---
-
-## 1) Definitions (applies to every column)
 
 - **total_rows**: number of rows in the table.
 - **missing_cnt**: values that are `NULL` or blank after trimming (`BTRIM()`).
@@ -93,11 +97,10 @@ It is designed to be **FA/RDT-friendly**: each column has clear definitions for 
 
 ---
 
-## 3) Latest scorecard output
-
+## 3) Latest scorecard outputs
 ### 3.1 Text / categorical columns
-```text
-Customer Card
+
+
 
 column_name        |total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
 -------------------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
@@ -109,12 +112,17 @@ verification_status|    270299|   270299|   100.00|             0|          0.00
 zip_code           |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|       887|      0.33|           2897|           1.07|750xx            |
 addr_state         |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|        51|      0.02|          37024|          13.70|CA               |
 
+---
+
+### 3.2 Numeric columns
+
 column_name     |total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|mean     |std     |min     |p25     |p50      |p75      |max      |
 ----------------+----------+---------+---------+--------------+--------------+-----------+-----------+---------+--------+--------+--------+---------+---------+---------+
 annual_inc      |    270299|   270212|    99.97|            87|          0.03|          0|       0.00| 78821.95|53349.81|   34.00|47300.00| 66000.00| 95000.00|998000.00|
 annual_inc_joint|    270299|    18785|     6.95|             9|          0.00|     251505|      93.05|129787.74|70034.20|15400.00|86588.00|115000.00|154000.00|960000.00|
 avg_cur_bal     |    270299|   270299|   100.00|             0|          0.00|          0|       0.00| 13668.80|16753.98|    0.00| 3107.00|  7376.00| 18921.50|623229.00|
 
+## 4) Distribution snapshots (Top-N evidence)
 emp_title_norm    |cnt  |pct |
 ------------------+-----+----+
                   |23658|8.75|
@@ -213,14 +221,30 @@ WA             | 5495| 2.03|
 MN             | 4782| 1.77|
 IN             | 4604| 1.70|
 TN             | 4417| 1.63|
-```
 
 > If you need top-N distribution for a text/categorical column, use `customer_set_top_20.sql`.
+
+## 5) Notes / Key findings (high signal)
+## 5) FA notes (quick interpretation)
+- `emp_title` is free-text: most common is low (%), which is normal.
+- `emp_length` and `home_ownership` are enums: most common can be high.
+- `zip_code` is masked and naturally has low top1% due to wide distribution.
+
+## 6) Next checks / TODO
+- Add cross-table integrity checks (FK orphans / joinability) where applicable
+- Add reconciliation controls (control totals) for derived/reporting tables
+- Promote reusable rules into SQL validation pack
+
+---
+
+## Appendix: Raw notes kept from the original file
+**Repo:** `bigquery_fintech_fa_datax_portfolio-profiling-rdt`  
+**Table:** `raw.customers`  
+**Updated (refactor):** 2026-02-20
 
 ---
 
 ## 4) How to run (DBeaver)
-
 1. Open `customer_profiling.sql`
 2. Execute the whole script
 3. You will get **two result sets**
@@ -228,9 +252,3 @@ TN             | 4417| 1.63|
    - **Numeric scorecard + statistics**
 
 ---
-
-## 5) FA notes (quick interpretation)
-
-- `emp_title` is free-text: most common is low (%), which is normal.
-- `emp_length` and `home_ownership` are enums: most common can be high.
-- `zip_code` is masked and naturally has low top1% due to wide distribution.
