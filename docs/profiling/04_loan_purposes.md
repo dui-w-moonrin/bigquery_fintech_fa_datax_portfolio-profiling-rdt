@@ -40,7 +40,7 @@ _(todo: list per-column locked rules, if any; otherwise state 'No additional loc
 
 
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|
------------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+
+-----------|----------|---------|---------|--------------|--------------|-----------|-----------|----------|----------|
 purpose    |        13|       13|   100.00|             0|          0.00|          0|       0.00|        13|    100.00|
 
 
@@ -84,7 +84,7 @@ _none_
 ## Allowed Values (as imported)
 ```text
 purpose           |
-------------------+
+------------------|
 car               |
 credit_card       |
 debt_consolidation|

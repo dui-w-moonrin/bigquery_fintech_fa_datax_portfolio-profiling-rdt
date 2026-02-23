@@ -46,7 +46,7 @@ customer card
 
 loan card
 
-|unique_pct|most_common_cnt|most_common_pct|most_common_value|
+column_name |total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
 |-----------|----------|---------|---------|--------------|--------------|-----------|-----------|----------|----------|---------------|---------------|-----------------|
 |loan_id    |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    270299|    100.00|              1|           0.00|1                |
 |customer_id|    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    270299|    100.00|              1|           0.00|b'' xfa:xf8)"x...|
