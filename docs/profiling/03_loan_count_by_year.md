@@ -43,7 +43,7 @@ _(todo: list per-column locked rules, if any; otherwise state 'No additional loc
 
 
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|
------------+----------+---------+---------+--------------+--------------+-----------+-----------+
+-----------|----------|---------|---------|--------------|--------------|-----------|-----------|
 issue_year |         8|        8|   100.00|             0|          0.00|          0|       0.00|
 loan_count |         8|        8|   100.00|             0|          0.00|          0|       0.00|
 
@@ -57,7 +57,7 @@ loan_count |         8|        8|   100.00|             0|          0.00|       
 ### 3.2 Numeric columns
 
 year_rows|min_year|max_year|total_loans|min_loan_count|max_loan_count|
----------+--------+--------+-----------+--------------+--------------+
+---------|--------|--------|-----------|--------------|--------------|
         8|    2012|    2019|     270299|          2594|         51737|
 
 
@@ -101,7 +101,7 @@ _none_
 ## Raw Values (as imported)
 ```text
 issue_year|loan_count|
-----------+----------+
+----------|----------|
     2017.0|     44435|
     2019.0|     51737|
     2013.0|     13460|

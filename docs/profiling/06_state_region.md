@@ -48,7 +48,7 @@ _otherwise state 'No additional locked rules beyond type normalization'_
 
 
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
------------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
+-----------|----------|---------|---------|--------------|--------------|-----------|-----------|----------|----------|---------------|---------------|-----------------|
 state      |        52|       51|    98.08|             1|          1.92|          0|       0.00|        52|    100.00|              1|           1.92|AK               |
 subregion  |        52|       51|    98.08|             1|          1.92|          0|       0.00|        10|     19.23|              9|          17.31|South Atlantic   |
 region     |        52|       51|    98.08|             1|          1.92|          0|       0.00|         5|      9.62|             17|          32.69|South            |
@@ -80,7 +80,7 @@ region     |        52|       51|    98.08|             1|          1.92|       
 ## 4) Distribution snapshots (Top-N evidence)
 
 state_region_norm|cnt|pct |
------------------+---+----+
+-----------------|---|----|
 AK               |  1|1.92|
 AL               |  1|1.92|
 AR               |  1|1.92|
@@ -157,7 +157,7 @@ We validated that each `subregion` maps to the correct `region`:
 **Exception result:**
 ```text
 subregion_norm|region_norm|cnt|
---------------+-----------+---+
+--------------|-----------|---|
 subregion     |Region     |  1|
 ```
 

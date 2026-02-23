@@ -43,7 +43,7 @@ _(todo: list per-column locked rules, if any; otherwise state 'No additional loc
 ### 3.1 Text / categorical columns
 
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|unique_cnt|unique_pct|most_common_cnt|most_common_pct|most_common_value|
------------+----------+---------+---------+--------------+--------------+-----------+-----------+----------+----------+---------------+---------------+-----------------+
+-----------|----------|---------|---------|--------------|--------------|-----------|-----------|----------|----------|---------------|---------------|-----------------|
 loan_id    |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|    270299|    100.00|              1|           0.00|1                |
 region     |    270299|   270299|   100.00|             0|          0.00|          0|       0.00|         4|      0.00|          97683|          36.14|South            |
 
@@ -61,7 +61,7 @@ reflects the size of the domain (here, 4 regions).
 ## 3.2) Numeric columns
 
 column_name|total_rows|valid_cnt|valid_pct|mismatched_cnt|mismatched_pct|missing_cnt|missing_pct|mean    |std    |min    |p25    |p50     |p75     |max     |
------------+----------+---------+---------+--------------+--------------+-----------+-----------+--------+-------+-------+-------+--------+--------+--------+
+-----------|----------|---------|---------|--------------|--------------|-----------|-----------|--------|-------|-------|-------|--------|--------|--------|
 loan_amount|    270299|   270299|   100.00|             0|          0.00|          0|       0.00|15412.83|9459.78|1000.00|8000.00|13200.00|20300.00|40000.00|
 
 
@@ -75,7 +75,7 @@ loan_amount|    270299|   270299|   100.00|             0|          0.00|       
 ## 4) Distribution snapshots (Top-N evidence)
 
 region_norm|cnt  |pct  |
------------+-----+-----+
+-----------|-----|-----|
 South      |97683|36.14|
 West       |69137|25.58|
 Northeast  |55014|20.35|
@@ -121,7 +121,7 @@ _(todo: list 3–6 high-signal observations + where to look next)_
 ## Reconciliation to raw.loans (loan_id level)
 ```text
 loan_with_region_rows|loan_with_region_distinct_loan_id|loans_rows|loans_distinct_loan_id|
----------------------+---------------------------------+----------+----------------------+
+---------------------|---------------------------------|----------|----------------------|
                270299|                           270299|    270299|                270299|
 ```
 
